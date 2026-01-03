@@ -24,7 +24,8 @@
         varying vec4 vCurrColor;
         
         void main(void) {
-            float particleTime = time + timeOffset;
+            float particleTime = time + timeOffset - lifetime;
+            particleTime *= 4.0;
             float loopTime = mod(particleTime, lifetime);
             float progress = fract(particleTime / lifetime);
 
@@ -34,9 +35,12 @@
             pos += startVel * loopTime;
             pos += 0.5 * (acc * loopTime * loopTime);
 
-            pos *= 0.10;
+            // Scale/offset some stuff
+            pos *= 0.02;
 
-            vCurrColor = startColor + progress * (endColor - startColor);
+            vec4 color = startColor + progress * (endColor - startColor);
+            float alpha = clamp(particleTime, 0.0, 1.0);
+            vCurrColor = vec4(color.rgb, alpha * color.a);
             gl_Position = vec4(pos, 0.0, 1.0);
             gl_PointSize = startSize + progress * (endSize - startSize);
         }
@@ -50,14 +54,14 @@
         const vec4 bgColor = vec4(0.3, 0.1, 0.4, 1.0);
 
         void main(void) {
-            float dist = distance(gl_PointCoord, vec2(0.5));
-            float dist_clamped = max(0.5, 1.-dist);
-            float alpha = smoothstep(dist_clamped, 0.3, 0.5); //  dist < 0.5 ? 1.0 : 0.0;
-            gl_FragColor = vec4(vCurrColor.rgb, alpha);
+            float dist_center = distance(gl_PointCoord, vec2(0.5));
+            float dist_clamped = 2.0 * min(0.5, dist_center);
+            float alpha = pow(1.-dist_clamped, 4.0);
+            gl_FragColor = vec4(vCurrColor.rgb, alpha * vCurrColor.a);
         }
     </script>
 </head>
 <body>
-    <canvas id="fireworks" width="500" height="300"></canvas>
+    <canvas id="fireworks"></canvas>
 </body>
 </html>
