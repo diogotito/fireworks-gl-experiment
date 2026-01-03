@@ -9,23 +9,27 @@
     <script type="module" src="script.mjs"></script>
 
     <script id="fireworks_vs" type="text/x-vertex-shader">
+        #version 300 es
+        
         uniform float time;
 
-        attribute float lifetime;
-        attribute float timeOffset;
-        attribute vec2 startPos;
-        attribute vec2 startVel;
-        attribute vec2 acc;
-        attribute float startSize;
-        attribute float endSize;
-        attribute vec4 startColor;
-        attribute vec4 endColor;
+        in float lifetime;
+        in float timeOffset;
+        in vec2 startPos;
+        in vec2 startVel;
+        in vec2 acc;
+        in float startSize;
+        in float endSize;
+        in vec4 startColor;
+        in vec4 endColor;
 
-        varying vec4 vCurrColor;
+        out vec4 vCurrColor;
         
+        const float TIME_SCALE = 1.0;  // 4.0 looks good
+
         void main(void) {
             float particleTime = time + timeOffset - lifetime;
-            particleTime *= 4.0;
+            particleTime *= TIME_SCALE;
             float loopTime = mod(particleTime, lifetime);
             float progress = fract(particleTime / lifetime);
 
@@ -38,26 +42,40 @@
             // Scale/offset some stuff
             pos *= 0.02;
 
+            
             vec4 color = startColor + progress * (endColor - startColor);
-            float alpha = clamp(particleTime, 0.0, 1.0);
+            float alpha = smoothstep(loopTime, 0.0, 0.4);
             vCurrColor = vec4(color.rgb, alpha * color.a);
-            gl_Position = vec4(pos, 0.0, 1.0);
+            
+            float depth = -1.4 + min(loopTime, 0.5);
+            gl_Position = vec4(pos, depth, 1.0);
+            
             gl_PointSize = startSize + progress * (endSize - startSize);
         }
     </script>
 
     <script id="fireworks_fs" type="text/x-fragment-shader">
-        precision mediump float;
+        #version 300 es
+        precision highp float;
 
-        varying vec4 vCurrColor;
+        in vec4 vCurrColor;
+        out vec4 outColor;
 
-        const vec4 bgColor = vec4(0.3, 0.1, 0.4, 1.0);
+        // const vec4 bgColor = vec4(0.3, 0.1, 0.4, 1.0);
 
         void main(void) {
             float dist_center = distance(gl_PointCoord, vec2(0.5));
+            if (dist_center > 0.5) {
+                discard;
+            }
+
             float dist_clamped = 2.0 * min(0.5, dist_center);
-            float alpha = pow(1.-dist_clamped, 4.0);
-            gl_FragColor = vec4(vCurrColor.rgb, alpha * vCurrColor.a);
+            float alpha = pow(1.-dist_clamped, 0.5);
+            float height = sqrt(1.0 - pow(2.0*dist_center, 2.0));
+
+            outColor = vec4(vCurrColor.rgb, height * vCurrColor.a);
+            outColor.a = 1.0;
+            gl_FragDepth = gl_FragCoord.z + .5* height;
         }
     </script>
 </head>

@@ -85,3 +85,12 @@ export class Shader {
 }
 
 globalThis.Shader = Shader
+
+
+function debounce(f, ms) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => f(...args), ms);
+    }
+}

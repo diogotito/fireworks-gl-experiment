@@ -1,6 +1,6 @@
 :root {
     --bg-1: #334;
-    --bg-2: #112;
+    --bg-2: #445;
     --bg-size: 20px;
     --square-size: calc(var(--bg-size) / 2);
 }
