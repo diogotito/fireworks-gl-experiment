@@ -14,10 +14,14 @@ if (!gl2) {
 let particleShader = new G.Shader(gl2, fireworks_vs.text, fireworks_fs.text);
 particleShader.use();
 
-let particles = Array.from({length: 100}, i => Object.assign(new Particle, {
+let particles = Array.from({length: 10000}, i => Object.assign(new Particle, {
     lifetime: 5,
+    timeOffset: Math.random() * 5,
+    startPos: G.Vec2.polar(Math.random() * Math.PI*2, 5),
     startSize: 20 + 50 * Math.random(),
-    startVel: G.vecPolar(Math.random() * Math.PI, 4 + 6*Math.random()),
+    startVel: G.Vec2.polar(Math.random() * Math.PI, 6 + 6*Math.random())
+                .add_xy(0, 8 * Math.random()),
+    acc: G.vec2(2*Math.random()-1, -9.81 - 10*Math.random()),
     startColor: [
         new G.RGBA(0.95, 0.2, 0.2, 1.0),
         new G.RGBA(0.2, 0.95, 0.2, 1.0),
@@ -43,13 +47,14 @@ const setupAttrib = (shader, attribName, offset=0, size=1) => {
     );
 }
 setupAttrib(particleShader, "lifetime");
-setupAttrib(particleShader, "startPos",   4, 2);
-setupAttrib(particleShader, "startVel",   4 + 4*2, 2);
-setupAttrib(particleShader, "acc",        4 + 4*2 + 4*2, 2);
-setupAttrib(particleShader, "startSize",  4 + 4*2 + 4*2 + 4*2);
-setupAttrib(particleShader, "endSize",    4 + 4*2 + 4*2 + 4*2 + 4);
-setupAttrib(particleShader, "startColor", 4 + 4*2 + 4*2 + 4*2 + 4 + 4, 4);
-setupAttrib(particleShader, "endColor",   4 + 4*2 + 4*2 + 4*2 + 4 + 4 + 4*4, 4);
+setupAttrib(particleShader, "timeOffset", 4);
+setupAttrib(particleShader, "startPos",   4 + 4, 2);
+setupAttrib(particleShader, "startVel",   4 + 4 + 4*2, 2);
+setupAttrib(particleShader, "acc",        4 + 4 + 4*2 + 4*2, 2);
+setupAttrib(particleShader, "startSize",  4 + 4 + 4*2 + 4*2 + 4*2);
+setupAttrib(particleShader, "endSize",    4 + 4 + 4*2 + 4*2 + 4*2 + 4);
+setupAttrib(particleShader, "startColor", 4 + 4 + 4*2 + 4*2 + 4*2 + 4 + 4, 4);
+setupAttrib(particleShader, "endColor",   4 + 4 + 4*2 + 4*2 + 4*2 + 4 + 4 + 4*4, 4);
 
 // the loop
 

@@ -12,6 +12,7 @@
         uniform float time;
 
         attribute float lifetime;
+        attribute float timeOffset;
         attribute vec2 startPos;
         attribute vec2 startVel;
         attribute vec2 acc;
@@ -23,10 +24,12 @@
         varying vec4 vCurrColor;
         
         void main(void) {
-            float loopTime = mod(time, lifetime);
-            float progress = fract(time / lifetime);
+            float particleTime = time + timeOffset;
+            float loopTime = mod(particleTime, lifetime);
+            float progress = fract(particleTime / lifetime);
 
             // Closed-form projectile equation
+            // https://www.sci.brooklyn.cuny.edu/~meyer/CISC3600/Materials/4_3Real_Time_Physics.pdf
             vec2 pos = startPos;
             pos += startVel * loopTime;
             pos += 0.5 * (acc * loopTime * loopTime);
@@ -47,8 +50,9 @@
         const vec4 bgColor = vec4(0.3, 0.1, 0.4, 1.0);
 
         void main(void) {
-            // float alpha = smoothstep(clamp(1.-length(gl_PointCoord - vec2(0.5)), 0., 1.), 0.4, 0.45);
-            float alpha = smoothstep(1.0-min(length(gl_PointCoord - vec2(0.5)), 0.5), 0.4, 0.75);
+            float dist = distance(gl_PointCoord, vec2(0.5));
+            float dist_clamped = max(0.5, 1.-dist);
+            float alpha = smoothstep(dist_clamped, 0.3, 0.5); //  dist < 0.5 ? 1.0 : 0.0;
             gl_FragColor = vec4(vCurrColor.rgb, alpha);
         }
     </script>

@@ -4,6 +4,9 @@ export default class Particle {
     /** @type {number} */
     lifetime = 1.0;
 
+    /** @type {number} */
+    timeOffset = 0.0;
+
     /** @type {G.Vec2} */
     startPos = new G.Vec2(0.0, 0.0);
 
@@ -28,6 +31,7 @@ export default class Particle {
     asFloats() {
         return [
             this.lifetime,
+            this.timeOffset,
             this.startPos.x, this.startPos.y,
             this.startVel.x, this.startVel.y,
             this.acc.x, this.acc.y,

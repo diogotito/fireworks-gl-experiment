@@ -27,15 +27,20 @@ export class Vec2 {
         this.x = x;
         this.y = y;
     }
+    static polar(theta, radius) {
+        let x = radius * Math.cos(theta);
+        let y = radius * Math.sin(theta);
+        return new Vec2(x, y);
+    }
+
+    add_xy(dx, dy) { return new Vec2(this.x + dx, this.y + dy); }
+    add(vec2) { return new Vec2(this.x + vec2.x, this.y + vec2.y); }
 }
 
 export function vec2(...args) { return new Vec2(...args); }
 
-export function vecPolar(theta, radius) {
-    let x = radius * Math.cos(theta);
-    let y = radius * Math.sin(theta);
-    return new Vec2(x, y);
-}
+export function add2(v1, v2) { return v1.add(v2) }
+
 
 export class Shader {
     /**
