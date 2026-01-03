@@ -1,0 +1,25 @@
+body {
+    --bg-1: #334;
+    --bg-2: #112;
+    background-image: conic-gradient(
+        var(--bg-1) 0.00turn, var(--bg-1) 0.25turn,
+        var(--bg-2) 0.25turn, var(--bg-2) 0.50turn,
+        var(--bg-1) 0.50turn, var(--bg-1) 0.75turn,
+        var(--bg-2) 0.75turn, var(--bg-2) 1.00turn
+    );
+    background-size: 20px 20px;
+
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+
+    color: white;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+canvas {
+    border: 1px solid grey;
+    place-self: center;
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<canvas id="test-canvas"></canvas>
+<script type="module">
+    import { Shader } from "./minigl.mjs"
+
+    const goodVS = `
+            void main(void) {
+                gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+        `;
+    const goodFS = `
+            precision mediump float;
+            void main(void) {
+                gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+            }
+        `;
+    const goodProgram = [goodVS, goodFS]
+    const programWithBadVS = ["coco", goodFS];
+    const programWithBadFS = [goodVS, "xixi"];
+    const programWithDefectiveLinkage = [`
+            varying vec4 jafoste;
+            void main(void) {
+                gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+            }
+        `, `
+            precision mediump float;
+            varying vec3 jafoste;  /* doesn't match vec4 in VS */
+            void main(void) {
+                gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+            }
+        `]
+
+
+    const gl2 = window["test-canvas"].getContext("webgl2");
+    expectSuccess("good program", () => new Shader(gl2, ...goodProgram));
+    expectError("good program", () => new Shader(gl2, ...goodProgram));
+    expectError("bad vertex", () => new Shader(gl2, ...programWithBadVS));
+    expectError("bad fragment", () => new Shader(gl2, ...programWithBadFS));
+    expectError("bad linkage", () => new Shader(gl2, ...programWithDefectiveLinkage));
+
+
+    function expectSuccess(name, fn) {
+        try {
+            fn();
+            console.log("✅ %cPassed", "color: green", name);
+        } catch (error) {
+            console.log("⚠️ %cFailed", "color: red; font-weight: bold", name);
+        }
+    }
+
+    function expectError(name, fn) {
+        try {
+            fn();
+            console.log("⚠️ %cFailed", "color: red; font-weight: bold", name);
+        } catch (error) {
+            console.log("✅ %cPassed", "color: green", name);
+        }
+    }
+</script>

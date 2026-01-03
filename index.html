@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireworks GL</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script type="module" src="script.mjs"></script>
+
+    <script id="fireworks_vs" type="text/x-vertex-shader">
+        uniform float time;
+
+        attribute float lifetime;
+        attribute vec2 startPos;
+        attribute vec2 startVel;
+        attribute vec2 acc;
+        attribute float startSize;
+        attribute float endSize;
+        attribute vec4 startColor;
+        attribute vec4 endColor;
+
+        varying vec4 vCurrColor;
+        
+        void main(void) {
+            float loopTime = mod(time, lifetime);
+            float progress = fract(time / lifetime);
+
+            // Closed-form projectile equation
+            vec2 pos = startPos;
+            pos += startVel * loopTime;
+            pos += 0.5 * (acc * loopTime * loopTime);
+
+            pos *= 0.10;
+
+            vCurrColor = startColor + progress * (endColor - startColor);
+            gl_Position = vec4(pos, 0.0, 1.0);
+            gl_PointSize = startSize + progress * (endSize - startSize);
+        }
+    </script>
+
+    <script id="fireworks_fs" type="text/x-fragment-shader">
+        precision mediump float;
+
+        varying vec4 vCurrColor;
+
+        const vec4 bgColor = vec4(0.3, 0.1, 0.4, 1.0);
+
+        void main(void) {
+            // float alpha = smoothstep(clamp(1.-length(gl_PointCoord - vec2(0.5)), 0., 1.), 0.4, 0.45);
+            float alpha = smoothstep(1.0-min(length(gl_PointCoord - vec2(0.5)), 0.5), 0.4, 0.75);
+            gl_FragColor = vec4(vCurrColor.rgb, alpha);
+        }
+    </script>
+</head>
+<body>
+    <canvas id="fireworks" width="500" height="300"></canvas>
+</body>
+</html>
