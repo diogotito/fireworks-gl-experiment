@@ -8,7 +8,7 @@
 
     <script type="module" src="script.mjs"></script>
 
-    <script id="fireworks_vs" type="text/x-vertex-shader">
+    <script id="fireworks_vs" type="x-shader/x-vertex">
         #version 300 es
         
         uniform float time;
@@ -25,12 +25,12 @@
 
         out vec4 vCurrColor;
         
-        const float TIME_SCALE = 1.0;  // 4.0 looks good
+        const float TIME_SCALE = 3.5;  // 4.0 looks good
 
         void main(void) {
             float particleTime = time + timeOffset - lifetime;
             particleTime *= TIME_SCALE;
-            float loopTime = mod(particleTime, lifetime);
+            float loopTime = mod(max(particleTime, 0.0), lifetime);
             float progress = fract(particleTime / lifetime);
 
             // Closed-form projectile equation
@@ -41,20 +41,19 @@
 
             // Scale/offset some stuff
             pos *= 0.02;
-
             
             vec4 color = startColor + progress * (endColor - startColor);
             float alpha = smoothstep(loopTime, 0.0, 0.4);
             vCurrColor = vec4(color.rgb, alpha * color.a);
             
-            float depth = -1.4 + min(loopTime, 0.5);
+            float depth = 1.-smoothstep(loopTime, 0.0, 0.5);
             gl_Position = vec4(pos, depth, 1.0);
             
             gl_PointSize = startSize + progress * (endSize - startSize);
         }
     </script>
 
-    <script id="fireworks_fs" type="text/x-fragment-shader">
+    <script id="fireworks_fs" type="x-shader/x-fragment">
         #version 300 es
         precision highp float;
 
@@ -74,8 +73,12 @@
             float height = sqrt(1.0 - pow(2.0*dist_center, 2.0));
 
             outColor = vec4(vCurrColor.rgb, height * vCurrColor.a);
-            outColor.a = 1.0;
-            gl_FragDepth = gl_FragCoord.z + .5* height;
+            //outColor.a = vCurrColor.a;
+            
+            gl_FragDepth = gl_FragCoord.z + 1. - 1.* height;
+            if (gl_FragDepth > 1.0) {
+                discard;
+            }
         }
     </script>
 </head>

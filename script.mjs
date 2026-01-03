@@ -14,25 +14,25 @@ if (!gl) {
 let particleShader = new G.Shader(gl, fireworks_vs.text.trim(), fireworks_fs.text.trim());
 particleShader.use();
 
-const NUM_PARTICLES = 20;
+const NUM_PARTICLES = 6_000;
 let particles = Array.from({length: NUM_PARTICLES}, i =>
     Object.assign(new Particle, {
         lifetime: 5,
         timeOffset: Math.random() * 5,
-        startPos: G.Vec2.polar(Math.random() * Math.PI*2, 5),
-        startSize: 20 + 50 * Math.random(),
+        startPos: G.Vec2.polar(Math.random() * Math.PI*2, 5).add_xy(0, 10),
+        startSize: 20 + 80 * Math.random(),
         startVel: G.Vec2.polar(Math.random() * Math.PI, 6 + 6*Math.random())
-                    .add_xy(0, 20 * Math.random()),
+                    .add_xy(0, 15 * Math.random()),
         acc: G.vec2(2*Math.random()-1, -9.81 - 10*Math.random()),
         startColor: [
-            new G.RGBA(0.95, 0.2, 0.2, 1.0),
-            new G.RGBA(0.2, 0.95, 0.2, 1.0),
-            new G.RGBA(0.2, 0.2, 0.95, 1.0),
-            new G.RGBA(0.2, 0.95, 0.95, 1.0),
-            new G.RGBA(0.95, 0.2, 0.95, 1.0),
-            new G.RGBA(0.95, 0.95, 0.2, 1.0),
+            new G.RGBA(0.95, 0.04, 0.10, 1.0),
+            new G.RGBA(0.10, 0.85, 0.10, 1.0),
+            new G.RGBA(0.10, 0.04, 0.85, 1.0),
+            new G.RGBA(0.10, 0.85, 0.85, 1.0),
+            new G.RGBA(0.95, 0.04, 0.85, 1.0),
+            new G.RGBA(0.95, 0.85, 0.10, 1.0),
         ][Math.floor(Math.random()*6)],
-        endColor: new G.RGBA(0.95, 0.95, 0.95, 1.0),
+        endColor: new G.RGBA(0.5, 0.5, 0.5, 0.9),
     })
 )
 
@@ -60,7 +60,7 @@ setupAttrib(particleShader, "startColor", 4 + 4 + 4*2 + 4*2 + 4*2 + 4 + 4, 4);
 setupAttrib(particleShader, "endColor",   4 + 4 + 4*2 + 4*2 + 4*2 + 4 + 4 + 4*4, 4);
 
 // the loop
-const START_DELAY = 100;
+const START_DELAY = 200;
 let startTime = 0;
 
 gl.clearColor(0, 0, 0, 0);
