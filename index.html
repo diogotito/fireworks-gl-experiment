@@ -1,88 +1,88 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fireworks GL</title>
-    <link rel="stylesheet" href="style.css">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fireworks GL</title>
+        <link rel="stylesheet" href="style.css" />
 
-    <script type="module" src="script.mjs"></script>
+        <script type="module" src="script.mjs"></script>
 
-    <script id="fireworks_vs" type="x-shader/x-vertex">
-        #version 300 es
-        
-        uniform float time;
+        <script id="fireworks_vs" type="x-shader/x-vertex">
+            #version 300 es
 
-        in float lifetime;
-        in float timeOffset;
-        in vec2 startPos;
-        in vec2 startVel;
-        in vec2 acc;
-        in float startSize;
-        in float endSize;
-        in vec4 startColor;
-        in vec4 endColor;
+            uniform float time;
 
-        out vec4 vCurrColor;
-        
-        const float TIME_SCALE = 3.5;  // 4.0 looks good
+            in float lifetime;
+            in float timeOffset;
+            in vec2 startPos;
+            in vec2 startVel;
+            in vec2 acc;
+            in float startSize;
+            in float endSize;
+            in vec4 startColor;
+            in vec4 endColor;
 
-        void main(void) {
-            float particleTime = time + timeOffset - lifetime;
-            particleTime *= TIME_SCALE;
-            float loopTime = mod(max(particleTime, 0.0), lifetime);
-            float progress = fract(particleTime / lifetime);
+            out vec4 vCurrColor;
 
-            // Closed-form projectile equation
-            // https://www.sci.brooklyn.cuny.edu/~meyer/CISC3600/Materials/4_3Real_Time_Physics.pdf
-            vec2 pos = startPos;
-            pos += startVel * loopTime;
-            pos += 0.5 * (acc * loopTime * loopTime);
+            const float TIME_SCALE = 3.5;  // 4.0 looks good
 
-            // Scale/offset some stuff
-            pos *= 0.02;
-            
-            vec4 color = startColor + progress * (endColor - startColor);
-            float alpha = smoothstep(loopTime, 0.0, 0.4);
-            vCurrColor = vec4(color.rgb, alpha * color.a);
-            
-            float depth = 1.-smoothstep(loopTime, 0.0, 0.5);
-            gl_Position = vec4(pos, depth, 1.0);
-            
-            gl_PointSize = startSize + progress * (endSize - startSize);
-        }
-    </script>
+            void main(void) {
+                float particleTime = time + timeOffset - lifetime;
+                particleTime *= TIME_SCALE;
+                float loopTime = mod(max(particleTime, 0.0), lifetime);
+                float progress = fract(particleTime / lifetime);
 
-    <script id="fireworks_fs" type="x-shader/x-fragment">
-        #version 300 es
-        precision highp float;
+                // Closed-form projectile equation
+                // https://www.sci.brooklyn.cuny.edu/~meyer/CISC3600/Materials/4_3Real_Time_Physics.pdf
+                vec2 pos = startPos;
+                pos += startVel * loopTime;
+                pos += 0.5 * (acc * loopTime * loopTime);
 
-        in vec4 vCurrColor;
-        out vec4 outColor;
+                // Scale/offset some stuff
+                pos *= 0.02;
 
-        // const vec4 bgColor = vec4(0.3, 0.1, 0.4, 1.0);
+                vec4 color = startColor + progress * (endColor - startColor);
+                float alpha = smoothstep(loopTime, 0.0, 0.4);
+                vCurrColor = vec4(color.rgb, alpha * color.a);
 
-        void main(void) {
-            float dist_center = distance(gl_PointCoord, vec2(0.5));
-            if (dist_center > 0.5) {
-                discard;
+                float depth = 1.-smoothstep(loopTime, 0.0, 0.5);
+                gl_Position = vec4(pos, depth, 1.0);
+
+                gl_PointSize = startSize + progress * (endSize - startSize);
             }
+        </script>
 
-            float dist_clamped = 2.0 * min(0.5, dist_center);
-            float alpha = pow(1.-dist_clamped, 0.5);
-            float height = sqrt(1.0 - pow(2.0*dist_center, 2.0));
+        <script id="fireworks_fs" type="x-shader/x-fragment">
+            #version 300 es
+            precision highp float;
 
-            outColor = vec4(vCurrColor.rgb, height * vCurrColor.a);
-            //outColor.a = vCurrColor.a;
-            
-            gl_FragDepth = gl_FragCoord.z + 1. - 1.* height;
-            if (gl_FragDepth > 1.0) {
-                discard;
+            in vec4 vCurrColor;
+            out vec4 outColor;
+
+            // const vec4 bgColor = vec4(0.3, 0.1, 0.4, 1.0);
+
+            void main(void) {
+                float dist_center = distance(gl_PointCoord, vec2(0.5));
+                if (dist_center > 0.5) {
+                    discard;
+                }
+
+                float dist_clamped = 2.0 * min(0.5, dist_center);
+                float alpha = pow(1.-dist_clamped, 0.5);
+                float height = sqrt(1.0 - pow(2.0*dist_center, 2.0));
+
+                outColor = vec4(vCurrColor.rgb, height * vCurrColor.a);
+                //outColor.a = vCurrColor.a;
+
+                gl_FragDepth = gl_FragCoord.z + 1. - 1.* height;
+                if (gl_FragDepth > 1.0) {
+                    discard;
+                }
             }
-        }
-    </script>
-</head>
-<body>
-    <canvas id="fireworks"></canvas>
-</body>
+        </script>
+    </head>
+    <body>
+        <canvas id="fireworks"></canvas>
+    </body>
 </html>
